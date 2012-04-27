@@ -1,0 +1,16 @@
+<!doctype html>
+<meta charset="UTF-8">
+<title>D3 Test</title>
+<script src="js/d3.v2.js"></script>
+<script>
+  var Tramway = Tramway || {};
+
+  Tramway = (function () {
+    var exprand = function (lambda) {
+      return (-1 / lambda) * Math.log(Math.random());
+    };
+
+    d3.json("/eladlassry.json", function (result) { console.log(result);});
+  }());
+</script>
+<div id="content"></div>
