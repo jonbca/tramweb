@@ -47,6 +47,11 @@
     .attr("transform", "translate(0, " + (height - 30) + ")")
     .text("date"),
 
+    clock = svg.append("text")
+    .attr("class", "date")
+    .attr("transform", "translate(400, " + (height - 30) + ")")
+    .text("time");
+
     simulation = function (tramway) {
       var DAYS = tramway.data.length,
       STEPS_PER_SLOT = 20,
@@ -71,7 +76,7 @@
       randomWalk = function () {
         var xs = [], ys = [], next_coords;
         xs.push(0);
-        ys.push(height/2);
+        ys.push(yscale(Math.random()));
 
         for (i = 1; i < STEPS_PER_SLOT - 1; i++) {
           next_coords = gaussian();
@@ -123,11 +128,11 @@
                 .attr("cy", function (d, i) {return d.y});
 
             svg.selectAll("circle")
-               .transition()
+               .transition().duration(300 + Math.random() * 15)
                .attr("cx", function (d, i) {return d.x})
                .attr("cy", function (d, i) {return d.y});
 
-            window.setTimeout(function () { redraw(new_dots, t + 1); }, 50);
+            window.setTimeout(function () { redraw(new_dots, t + 1); }, 302 + Math.random() * 10);
       },
       advance = function (dots, t) {
         return dots.map(function (v, i, a) {
