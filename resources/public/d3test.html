@@ -55,7 +55,6 @@
       STEPS = DAYS * STEPS_PER_DAY,
       xscale = d3.scale.linear().domain([0, 1]).range([0, width]),
       yscale = d3.scale.linear().domain([0, 1]).range([0, height]),
-      clock = 0,
       serial = 1,
       nextArrival = Infinity,
       lastSlot = 0,
@@ -65,7 +64,10 @@
 
         return {'x': x1, 'y': x2};
       },
-      simulate = function () {},
+      simulate = function () {
+        title.text(tramway["event"]);
+        redraw([], 0);
+      },
       randomWalk = function () {
         var xs = [], ys = [], next_coords;
         xs.push(0);
@@ -108,6 +110,25 @@
 
         return dots;
       },
+      redraw = function (dots, t) {
+        var new_dots = stepSimulation(dots, t + 1),
+            dot = svg.selectAll("circle")
+                .data(new_dots, function (d) { return d.id; });
+
+            dot.exit().remove();
+
+            dot.enter().append("circle").attr("class", "man")
+                .attr("r", 10)
+                .attr("cx", function (d, i) {return d.x})
+                .attr("cy", function (d, i) {return d.y});
+
+            svg.selectAll("circle")
+               .transition()
+               .attr("cx", function (d, i) {return d.x})
+               .attr("cy", function (d, i) {return d.y});
+
+            window.setTimeout(function () { redraw(new_dots, t + 1); }, 50);
+      },
       advance = function (dots, t) {
         return dots.map(function (v, i, a) {
           v.x = v.x_positions.shift();
@@ -136,18 +157,21 @@
         'advance': advance,
         'stepSimulation': stepSimulation,
         'randomWalk': randomWalk,
-        'simulate': simulate
+        'simulate': simulate,
+        'redraw': redraw
       };
     };
 
     d3.json("/eladlassry.json", function (tramway) { 
-      var dot = svg.append("g")
-      .attr("class", "man")
-      .selectAll(".man")
-      .data([])
-      .enter().append("circle")
-      .attr("class", "man")
-      .attr("r", 10);
+      var sim = simulation(tramway),
+          dot = svg.append("g")
+                  .selectAll(".man")
+                  .data(sim.stepSimulation([], 0), function (d) { return d.id; } )
+                  .enter().append("circle")
+                  .attr("class", "man")
+                  .attr("r", 10);
+
+      sim.simulate();
     });
     return {"simulation": simulation};
   }());
