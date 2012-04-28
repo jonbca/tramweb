@@ -1,16 +1,151 @@
 <!doctype html>
 <meta charset="UTF-8">
 <title>D3 Test</title>
+<link rel="stylesheet" href="css/reset.css" type="text/css" />
+<style type="text/css" media="screen">
+  body {
+    overflow: hidden;
+  }
+  text.title {
+    font: 300 78px Helvetica Neue;
+    fill: #666;
+  }
+
+  text.date {
+    font: 200 58px Helvetica Neue;
+    fill: rgb(130, 23, 55);
+  }
+  circle.man {
+    fill: #288;
+  }
+</style>
 <script src="js/d3.v2.js"></script>
+<div id="content"></div>
 <script>
   var Tramway = Tramway || {};
 
   Tramway = (function () {
-    var exprand = function (lambda) {
+    var width = window.innerWidth - 20,
+    height = window.innerHeight - 20,
+    exprand = function (lambda) {
       return (-1 / lambda) * Math.log(Math.random());
+    },
+
+    svg = d3.select("#content").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(20, 20)"),
+
+    title = svg.append("text")
+    .attr("class", "title")
+    .attr("dy", ".71em")
+    .text("title"),
+
+    dateText = svg.append("text")
+    .attr("class", "date")
+    .attr("transform", "translate(0, " + (height - 30) + ")")
+    .text("date"),
+    simulation = function (tramway) {
+      var DAYS = tramway.data.length,
+      STEPS_PER_SLOT = 20,
+      SLOTS_PER_DAY = 10,
+      STEPS_PER_DAY = STEPS_PER_SLOT * SLOTS_PER_DAY,
+      STEPS = DAYS * STEPS_PER_DAY,
+      xscale = d3.scale.linear().domain([0, 1]).range([0, width]),
+      yscale = d3.scale.linear().domain([0, 1]).range([0, height]),
+      clock = 0,
+      serial = 1,
+      nextArrival = Infinity,
+      lastSlot = 0,
+      gaussian= function () {
+        var x1 = Math.random(),
+        x2 = Math.random();
+
+        return {'x': x1, 'y': x2};
+      },
+      simulate = function () {},
+      randomWalk = function () {
+        var xs = [], ys = [], next_coords;
+        xs.push(0);
+        ys.push(height/2);
+
+        for (i = 1; i < STEPS_PER_SLOT - 1; i++) {
+          next_coords = gaussian();
+          xs.push(Math.ceil(xscale(next_coords.x)));
+          ys.push(Math.floor(yscale(next_coords.y)));
+        }
+
+        xs.push(Math.floor(xscale(1)));
+        ys.push(Math.floor(yscale(1)));
+        xs = xs.sort(function (a, b) { return a - b; });
+        return { 'xs': xs, 'ys': ys };
+      },
+      stepSimulation = function (dots, t) {
+        var current_day = Math.floor(t/STEPS_PER_DAY),
+        current_slot = Math.floor((t - current_day * STEPS_PER_DAY)/STEPS_PER_SLOT),
+        lambda = tramway.data[current_day].traffic[current_slot] / STEPS_PER_SLOT;
+        dots = dots.filter(function (el, i, a) {
+          return el.x_positions.length != 0;
+        });
+
+        dots = advance(dots, t);
+
+        if (t >= nextArrival) {
+          dots = addNewDot(dots, t);
+        }
+
+        if (t >= nextArrival && lastSlot === current_slot) {
+          nextArrival = Math.floor(nextArrival + exprand(lambda));
+        } else {
+          nextArrival = Math.floor(t + exprand(lambda));
+          lastSlot = current_slot;
+        }
+
+        return dots;
+      },
+      advance = function (dots, t) {
+        return dots.map(function (v, i, a) {
+          v.x = v.x_positions.shift();
+          v.y = v.y_positions.shift();
+          return v;
+        });
+      },
+      addNewDot = function (dots, t) {
+        var current_day = Math.floor(DAYS * t / STEPS),
+        current_slot = Math.floor(t - current_day * STEPS_PER_DAY),
+        walk = randomWalk();
+
+        dots.push({
+          id: "_gen" + current_day + "_" + (serial++),
+          x: walk.xs.shift(),
+          y: walk.ys.shift(),
+          x_positions: walk.xs,
+          y_positions: walk.ys
+        });
+
+        return dots;
+      };
+      return {
+        'gaussian': gaussian,
+        'addNewDot': addNewDot,
+        'advance': advance,
+        'stepSimulation': stepSimulation,
+        'randomWalk': randomWalk,
+        'simulate': simulate
+      };
     };
 
-    d3.json("/eladlassry.json", function (result) { console.log(result);});
+    d3.json("/eladlassry.json", function (tramway) { 
+      var dot = svg.append("g")
+      .attr("class", "man")
+      .selectAll(".man")
+      .data([])
+      .enter().append("circle")
+      .attr("class", "man")
+      .attr("r", 10);
+    });
+    return {"simulation": simulation};
   }());
+
 </script>
-<div id="content"></div>
