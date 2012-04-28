@@ -46,6 +46,7 @@
     .attr("class", "date")
     .attr("transform", "translate(0, " + (height - 30) + ")")
     .text("date"),
+
     simulation = function (tramway) {
       var DAYS = tramway.data.length,
       STEPS_PER_SLOT = 20,
@@ -85,6 +86,9 @@
         var current_day = Math.floor(t/STEPS_PER_DAY),
         current_slot = Math.floor((t - current_day * STEPS_PER_DAY)/STEPS_PER_SLOT),
         lambda = tramway.data[current_day].traffic[current_slot] / STEPS_PER_SLOT;
+
+        dateText.text(tramway.data[current_day].date);
+
         dots = dots.filter(function (el, i, a) {
           return el.x_positions.length != 0;
         });
