@@ -63,6 +63,7 @@
       serial = 1,
       nextArrival = Infinity,
       lastSlot = 0,
+      currentTime = "",
       gaussian= function () {
         var x1 = Math.random(),
         x2 = Math.random();
@@ -89,13 +90,23 @@
         xs = xs.sort(function (a, b) { return a - b; });
         return { 'xs': xs, 'ys': ys };
       },
+      computeCurrentTime = function (current_day, current_slot, t) {
+        var hour = current_slot + 10,
+            minute = (t - (current_day * STEPS_PER_DAY + current_slot * STEPS_PER_SLOT)) * 60 /
+              STEPS_PER_SLOT;
+        return "" + hour + ":" + minute;
+
+      },
       stepSimulation = function (dots, t) {
         var current_day = Math.floor(t/STEPS_PER_DAY),
         current_slot = Math.floor((t - current_day * STEPS_PER_DAY)/STEPS_PER_SLOT),
-        lambda = tramway.data[current_day].traffic[current_slot] / STEPS_PER_SLOT;
+        lambda = tramway.data[current_day].traffic[current_slot] / STEPS_PER_SLOT,
+        currentTime;
 
         dateText.text(tramway.data[current_day].date);
 
+        currentTime = computeCurrentTime(current_day, current_slot, t);
+        clock.text(currentTime);
         dots = dots.filter(function (el, i, a) {
           return el.x_positions.length != 0;
         });
@@ -128,11 +139,11 @@
                 .attr("cy", function (d, i) {return d.y});
 
             svg.selectAll("circle")
-               .transition().duration(300 + Math.random() * 15)
+               .transition().duration(100 + Math.random() * 15).ease("quad")
                .attr("cx", function (d, i) {return d.x})
                .attr("cy", function (d, i) {return d.y});
 
-            window.setTimeout(function () { redraw(new_dots, t + 1); }, 302 + Math.random() * 10);
+            window.setTimeout(function () { redraw(new_dots, t + 1); }, 100 + Math.random() * 10);
       },
       advance = function (dots, t) {
         return dots.map(function (v, i, a) {
