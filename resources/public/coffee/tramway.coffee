@@ -2,6 +2,9 @@ STEPS_PER_SLOT = 20
 SLOTS_PER_DAY  = 10
 STEPS_PER_DAY  = STEPS_PER_SLOT * SLOTS_PER_DAY
 
+window.Backbone = require('backbone')
+window._ = require('underscore')
+
 exprand = (lambda) -> (-1/lambda) * Math.log(Math.random())
 
 class Guest extends Backbone.Model
@@ -33,7 +36,6 @@ class Exhibition extends Backbone.Model
         days.add [ new Day(x.date, x.traffic) for x in d.data ]
         @set {days: days, title: d.event}
     )
-
 
 class Tramway extends Backbone.View
   initialize: ->
