@@ -36,10 +36,6 @@ class Exhibition extends Backbone.Model
 
 
 class Tramway extends Backbone.View
-  id: 'content'
-
-  tagName: 'div'
-
   initialize: ->
     @width = innerWidth - 20
     @height = innerHeight - 20
@@ -61,3 +57,4 @@ class Tramway extends Backbone.View
   yscale: d3.scale.linear().domain([0, 1]).range([0, @height])
 
 window.ex = new Exhibition({id: "eladlassry"})
+window.tramway = new Tramway({model: window.ex})
