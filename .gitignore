@@ -5,3 +5,4 @@ pom.xml
 .lein-deps-sum
 /tramweb.*
 /resources/public/coffee/*.js
+/resources/public/js/node_modules
